@@ -730,6 +730,129 @@ model_single_numerical <- lm(W.P ~ EFG_O + EFG_D + TOR + TORD + ORB + DRB + FTRD
 mmps(model_single_numerical)
 ```
 
-# Limitations and Conclusions
+
+### Final Diagnostics
+Based on the result above, shows the summary of the final model and its diagnostic plots below. As well as the leverage plots. There are some bad leverage points. Also provides the diagnostic plots after removing those bad leverage points. The diagnostic plots indicate that the assumptions are met and that the predictors are effective in predicting the winning proportions. One issue we may consider is a multicollinearity issue with interaction. Some of the predictors, such as EFG_O, WAB, and those interacted terms of the final model have variance inflation factors larger than 5.
+
+
+
+
+|             	            | Estimate   	| Std. Error 	| t value 	| Pr(>\|t\|) 	|
+|--------------------------	|------------	|------------	|---------	|------------	|
+| (Intercept)             	| -0.0956912 	| 0.1087230  	| -0.880  	| 0.378892   	|
+| EFG_o                    	| 0.0251080  	| 0.0019409  	| 12.936  	| < 2e-16    	|
+| EFG_D       	            | -0.0173218 	| 0.0014257  	| -12.150 	| < 2e-16    	|
+| TOR         	            | -0.0184541 	| 0.0021265  	| -8.678  	| < 2e-16    	|
+| TORD        	            | 0.0188746  	| 0.0013756  	| 13.721  	| < 2e-16    	|
+| ORB            	          | 0.0092178  	| 0.0010933  	| 8.431   	| < 2e-16    	|
+| DRB         	            | -0.0091768 	| 0.0008059  	| -11.387 	| < 2e-16    	|
+| FTRD                      | -0.0018203  | 0.0003588   | -5.073    | 4.27e-07    |
+| WAB                       | 0.0181589   | 0.0010879   | 16.692    | < 2e-16     |
+| X500.LevelYES             | 0.5972203   | 0.1123004   | 5.318     | 1.17e-07    |
+| X500.LevelNO:ADJOE        | -0.0101787  | 0.0013350   | -7.625    | 3.78e-14    |
+| X500.LevelYES:ADJOE       | -0.0148462  | 0.0012437   | -11.937   | < 2e-16     |
+| WAB:X500.LevelYES         | 0.0050946   | 0.0013771   | 3.699     | 0.000222    |
+| ADJOE:Power.RatingMEDIUM  | 0.0070205   | 0.0016043   | 4.376     | 1.27e-05    |
+| ADJOE:Power.RatingSMALL   | 0.0109665   | 0.0017807   | 6.159     | 8.87e-10    |
+| Power.RatingLARGE:ADJDE   | 0.0130708   | 0.0011956   | 10.932    | < 2e-16     |
+| Power.RatingMEDIUM:ADJDE  | 0.0114744   | 0.0013279   | 8.641     | < 2e-16     |
+| Power.RatingSMALL:ADJDE   | 0.0093150   | 0.0011239   | 8.288     | < 2e-16     |
+| EFG_O:Power.RatingMEDIUM  | -0.0110918  | 0.0026461   | -4.192    | 2.89e-05    |
+| EFG_O:Power.RatingSMALL   | -0.0167030  | 0.0031358   | -5.326    | 1.12e-07    |
+| TOR:Power.RatingMEDIUM    | 0.0070655   | 0.0026112   | 2.706     | 0.006870    |
+| TOR:Power.RatingSMALL     | 0.0140951   | 0.0029780   | 4.733     | 2.37e-06    |
+| ORB:Power.RatingMEDIUM    | -0.0045416  | 0.0014650   | -3.100    | 0.001962    |
+| ORB:Power.RatingSMALL     | -0.0055318  | 0.0016170   | -3.421    | 0.000637    |
+
+
+
+| Observations 	| Residual Std. Error 	| R^2    	| Adjusted R^2 	|
+|--------------	|---------------------	|--------	|--------------	|
+| 2000         	| 0.08117             	| 0.8221 	| 0.82         	|
+
+```{r, echo=FALSE}
+diag_plot2 <- function(x) {
+  p1 <- ggplot(x, aes(x$fitted.values, x$residuals)) + 
+  geom_point() +
+  geom_smooth(method = "loess", formula = y ~ x, color = "red") + 
+  geom_hline(yintercept = 0, color = "gray", linetype = "dashed") +
+  labs(x = "Fitted values", y = "Residuals", title = "Residual vs Fitted Plot")
+
+  p2 <- ggplot(x, aes(sample = rstandard(x))) + 
+    stat_qq() + 
+    stat_qq_line() +
+    labs(x = "Theoretical Quantiles", y = "Standardized Residuals", title = "Normal Q-Q")
+
+  p3 <- ggplot(x, aes(x$fitted.values, sqrt(abs(rstandard(x))))) + 
+    geom_point(na.rm = TRUE) +
+    geom_smooth(method = "loess", formula = y ~ x, na.rm = TRUE) +
+    labs(x = "Fitted Value", y = expression(sqrt("|Standardized Residuals|")), 
+         title = "Scale-Location") + 
+    geom_hline(yintercept = sqrt(2), color = "red", linetype = "dashed")
+
+  p4 <- ggplot(x, aes(hatvalues(x), rstandard(x))) +
+    geom_point(aes(size = cooks.distance(x)), na.rm = TRUE) +
+    scale_size_continuous("Cook's Distance", range = c(1,5)) +
+    labs(x = "Leverage", y = "Standardized Residuals",
+         title = "Residual vs Leverage Plot") +
+    geom_hline(yintercept = c(-2,2), color = "red", linetype = "dashed") +
+    geom_vline(xintercept = 2 * (nrow(summary(x)$coefficients)-1) / 2000, color = "blue", linetype = "dashed")
+  
+  grid.arrange(p1, p2, p3, p4, nrow = 2)
+}
+updated_model <- lm(W.P ~ EFG_O + EFG_D +
+           TOR + TORD + ORB + DRB +
+           FTRD + WAB + X500.Level +
+           ADJOE:X500.Level + WAB*X500.Level +
+           ADJOE:Power.Rating + ADJDE:Power.Rating + EFG_O:Power.Rating + 
+           TOR:Power.Rating + ORB:Power.Rating,
+         data = train)
+diag_plot2(updated_model)
+```
+
+
+### Leverage Points
+
+| Leverage Points 	| Outliers 	|     	|
+|-----------------	|----------	|-----	|
+|                 	| NO       	| YES 	|
+| YES             	| 86       	| 7   	|
+| NO              	| 1828     	| 79  	|
+
+
+
+### Leverage Plots
+```{r, echo=FALSE}
+avPlots(updated_model)
+```
+
+
+### Model after removing 7 bad leverage points
+```{r, echo=FALSE}
+no_bad_lev_data <- train[-c(5, 36, 40, 54, 61, 70, 85), ]
+updated_model_leverage <- lm(W.P ~ EFG_O + EFG_D +
+           TOR + TORD + ORB + DRB +
+           FTRD + WAB + X500.Level +
+           ADJOE:X500.Level + WAB*X500.Level +
+           ADJOE:Power.Rating + ADJDE:Power.Rating + EFG_O:Power.Rating + 
+           TOR:Power.Rating + ORB:Power.Rating,
+         data = no_bad_lev_data)
+diag_plot2(updated_model_leverage)
+```
+
+
+
+
+| Observations 	| Residual Std. Error 	| R^2    	| Adjusted R^2 	|
+|--------------	|---------------------	|--------	|--------------	|
+| 1993         	| 0.08111             	| 0.8223 	| 0.8203       	|
+
+
+
+### Limitation and  Conclusion
+
+In regards to the diagnostic plots shown above, it seems good on normality assumption, constant variance assumption. This final model is effective in predicting the winning proportion in USA college basketball. However, there is one issue mentioned before, which is multicollinearity. The variance inflation factors of the interacted predictors are greater than 5.
+
+The score of this final model is on the top of the rank in Kaggle. Most of the other teams got approximately the same score, just a difference of less than 0.005. 
 
 
