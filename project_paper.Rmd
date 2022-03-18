@@ -1,5 +1,5 @@
 ---
-title: "Final Paper"
+title: "Stats 101A Predicting College Basketball Team Winning Percentages"
 author: "Oscar O'Brien, Kaijun Cui, Donald Chung" 
 output:
   pdf_document: default
@@ -20,20 +20,20 @@ test <- read.csv("CBDtestNoY.csv")
 | Feature                    | Response                                |
 |----------------------------|-----------------------------------------|
 | Name                       | Oscar O'Brien, Kaijun Cui, Donald Chung |
-| SID                        | x                                       |
-| Kaggle Nickname            | x                                       |
-| Kaggle Rank                | x                                       |
-| Kaggle R^2                 | x                                       |
-| Total Number of Predictors | x                                       |
-| Total Number of Betas      | x                                       |
-| BIC                        | x                                       |
-| Complexity Grade           | x                                       |
+| SID                        | 205338241, ,                                |
+| Kaggle Nickname            | Oscar, Donald, Kaijun - Lec1                 |
+| Kaggle Rank                | NEED TO UPDATE                                       |
+| Kaggle R^2                 | 0.81733                                       |
+| Total Number of Predictors | 12                                       |
+| Total Number of Betas      | 24                                      |
+| BIC                        | -9886.535                                       |
+| Complexity Grade           | 86                                       |
 
 # Abstract
-The purpose of this project is to create a multiple linear regression model to predict the winning proportion of every team based on some stat sheet of any game. We used variable selection techniques and regression theory to select a subset of variables to use in our multiple linear regression model to predict the winning proportions. In total, [X] predictors were used in our final model. Our [TEAM NAME] achieved a [RANK] on the class Kaggle competition. Our submitted model's $R^2$ value for training model is [VALUE], and the model's $R^2$ value for the testing model is [VALUE].
+The purpose of this project is to create a multiple linear regression model to predict the winning proportion of college basketball teams based game performance summary statistics[1]. This type of analysis is useful for situations like the annual March Madness Tournament where people around the world try to guess the outcome of a 64 team single elimination tournament for large sums of money[2]. We used variable selection techniques and regression theory to select a subset of variables to use in our multiple linear regression model to predict the winning proportions. In total, 12 predictors were used in our final model. Our team ("Oscar, Donald, Kaijun - Lec1") achieved a [RANK] on the class Kaggle competition. Our submitted model's adjusted $R^2$ value for training model is 0.82, and the model's $R^2$ value for the testing model is 0.81733.
 
 # Introduction
-We aim to understand which predictors are relevant to determining the win proportion of a team and by doing so construct a multiple linear regression model to predict win proportion. We have used data gathered from the 2013-2021 seasons of division I college basketball seasons in the United States. Our dataset has `r nrow(train) + nrow(test)` observations and `r ncol(train)-1` predictors which consisted of different statistics gathered from the season (e.g. Free throws, etc.). The final regression model that was submitted to a class Kaggle competition used to predict the win proportion of teams was used to predict the win proportion of a testing dataset containing [VALUE] observations. Below are the set of initial predictors provided with the dataset.
+We aim to understand which predictors are relevant to determining the win proportion of a team and by doing so construct a multiple linear regression model to predict win proportion. We have used data gathered from the 2013-2021 seasons of division I college basketball seasons in the United States. Our dataset has `r nrow(train) + nrow(test)` observations (2000 training and 1155 testing observations) and `r ncol(train)-1` predictors which consisted of different statistics gathered from the season (e.g. Free throws, etc.). The final regression model that was submitted to a class Kaggle competition[3] used to predict the win proportion of teams was used to predict the win proportion of a testing dataset containing 1155 observations. Below are the set of initial predictors provided with the dataset.
 
 \newpage
 | Feature        | Response    |
@@ -63,7 +63,7 @@ We aim to understand which predictors are relevant to determining the win propor
 
 ## Analyzing the response variable: Win proportion (W.P)
 
-We first take a look at the response variable, W.P, to determine if it is normal to decide whether or not it is necessary to perform a transformation on it.  The density histogram below shows that it is approximately normal.
+We first take a look at the response variable, W.P, to determine if it is normal to decide whether or not it is necessary to perform a transformation on it.  The density histogram below shows that it is approximately normal, so transformations are not immediately necessary.
 
 
 ```{r  echo=FALSE, warning=FALSE, message=FALSE}
@@ -79,8 +79,6 @@ ggplot(train, aes(x = W.P)) +
 
 
 ## Analyzing the categorical variables
-
-Below is a table of categorical predictors along with the number of levels they each have. This is followed by boxplots of the predictors against W.P. The matrix of plots suggests that X500.Level and Power.Rating would be good predictors for W.P
 
 | Variable     | Number of Categories |
 |--------------|----------------------|
@@ -113,84 +111,16 @@ grid.arrange(p1, p2, p3, p4, nrow = 2)
 
 ## Analyzing the numerical variables
 
-We now inspect our numerical variables. We first look at the relationship between W.P are the numerical predictors. Below is a table of the numerical variable and the correlation coefficient between the variable and W.P:
 
-| Variable       | Correlation |
-|----------------|-------------|
-| WAB            | 0.806       |
-| ADJOE          | 0.643       |
-| ADJDE          | -0.591      |
-| EFG_O          | 0.589       |
-| X2P_O          | 0.554       |
-| EFG_D          | -0.525      |
-| X2P_D          | -0.456      |
-| X3P_O          | 0.415       |
-| X3P_D          | -0.412      |
-| TOR            | -0.387      |
-| DRB            | -0.354      |
-| FTRD           | -0.266      |
-| ORB            | 0.245       |
-| FTR            | 0.147       |
-| TORD           | 0.146       |
-| Adjusted.Tempo | -0.00671    |
 
-Additionally here is a scatterplot matrix between the numberical variables
 
-```{r echo =FALSE, message =FALSE}
-ggpairs(train, columns = c("WAB", "ADJOE", "ADJDE", "EFG_O", "X2P_O", "EFG_D", "X2P_D", "X3P_O", "X3P_D", "TOR", "DRB", "FTRD", "ORB", "FTR", "TORD", "Adjusted.Tempo"))
-```
 
-Based on the density plots of the numerical variables they all seem approximately normal so transformations to fix normality are not needed. 
-
-## Analyzing Interactions
-
-Below are the most prominent interactions that were found along with their plots
-
-```{r echo=FALSE, message=FALSE}
-p1 <- ggplot(train, aes(x = ADJOE, y = W.P, group = X500.Level, color = X500.Level)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p2 <- ggplot(train, aes(x = WAB, y = W.P, group = X500.Level, color = X500.Level)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p3 <- ggplot(train, aes(x = ADJOE, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p4 <- ggplot(train, aes(x = ADJDE, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p5 <- ggplot(train, aes(x = EFG_O, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p6 <- ggplot(train, aes(x = TOR, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p7 <- ggplot(train, aes(x = ORB, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-p8 <- ggplot(train, aes(x = WAB, y = W.P, group = Power.Rating, color = Power.Rating)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "loess")
-
-grid.arrange(p1, p2, p3, p4, nrow = 2)
-```
-
-```{r echo="FALSE", message=FALSE}
-grid.arrange(p5, p6, p7, p8, nrow = 2)
-```
 
 ## Variable Selection with BIC and AIC
 
 ### AIC Backstep Model
 
-We used backstep AIC and BIC to verify that our model is using the best subset of predictors to predict winning percentage. First using backstep AIC, the summary statistics are below. This model overfit with lots of predictors that are not significant, so it was worth looking at BIC because it has a larger penalty.
+We used backstep AIC and BIC to verify that our model is using the best subset of predictors to predict winning percentage. First using backstep AIC, the summary statistics are below. This model overfit with lots of predictors that are not significant, so it was worth looking at BIC because it has a larger penalty to too many predictors in a model.
 
 ```{r AIC model, echo=FALSE, warning=FALSE, message=FALSE}
 m.a <- lm(formula = W.P ~ ADJOE + X500.Level + ADJDE + EFG_O + EFG_D + 
@@ -327,7 +257,7 @@ m.a <- lm(formula = W.P ~ ADJOE + X500.Level + ADJDE + EFG_O + EFG_D +
 | 2000         | 0.0781057          | 0.8411 | 0.8334      |
 
 
-Moving to BIC, the summary statistics are shown for the predictor subset out of all two variable interactions. BIC recommends far less predictors than AIC as expected, and all interactions are significant except one.
+Moving to BIC, the summary statistics are shown for the predictor subset out of all two variable interactions. BIC recommends far less predictors than AIC as expected, and all interactions are significant except one. In total, the model uses 30 predictors with an adjusted $R^2$ of 0.8253.
 
 ### BIC Backstep Model
 
@@ -389,7 +319,7 @@ m.b <- lm(formula = W.P ~ ADJOE + X500.Level + ADJDE + EFG_O + EFG_D +
 | 2000         | 0.0799765          | 0.8278 | 0.8253      |
 
 
-Using the information from the backstep AIC and BIC, we created our final model, which uses less predictors without losing very much adjusted $R^2$. The summary statistics are shown below. All predictors are significant with p-values less than .01. In total, there are 23 predictors and 24 betas because of the intercept.
+Using the information from the backstep AIC and BIC, we created our final model, which uses less predictors without losing very much adjusted $R^2$. The summary statistics are shown below. All predictors are significant with p-values less than .01. In total, there are 24 betas from 12 predictors.
 
 ```{r updated_model, echo = FALSE, message=FALSE, warning=FALSE}
 updated_model <- lm(W.P ~ EFG_O + EFG_D +
@@ -445,7 +375,7 @@ updated_model <- lm(W.P ~ EFG_O + EFG_D +
 
 
 
-To verify that the added variables in the BIC recommended model are not significant, we conduced a partial f-test. We did not think a partial f-test was necessary with the AIC recommended model because the model was overfitting with many of the predictors being insignificant. Interestingly, the partial f-test produced a very significant p-value (<.001), which implies that at least one beta in the BIC model that was removed is not 0. However, in practice, the 6 added predictors in the BIC model only increased the adjusted $R^2$ value by 0.00166. As a result, we decided to accept that small lose in adjusted $R^2$ in favor of a simplier model.
+To verify that the added variables in the BIC recommended model are not significant, we conduced a partial f-test. We did not think a partial f-test was necessary with the AIC recommended model because the model was overfitting with many of the predictors being insignificant. Interestingly, the partial f-test produced a very significant p-value (<.001), which implies that at least one beta in the BIC model that was removed is not 0. However, in practice, the 6 added predictors in the BIC model only increased the adjusted $R^2$ value by 0.0053. As a result, we decided to accept that small lose in adjusted $R^2$ in favor of a simplier model.
 
 ### Partial F-test
 
@@ -678,7 +608,7 @@ As a result of the work above, we could not find a transformed version of our mo
 
 ## Final Model
 
-Having looked at the diagnostics, variable selection, and potential transformations above, we would like to reiterate our final model. This model produced a score of 0.81733 on Kaggle, and the model includes 23 predictors.
+Having looked at the diagnostics, variable selection, and potential transformations above, we would like to reiterate our final model. This model produced a score of 0.81733 on Kaggle, and the model includes 24 betas from 12 predictors.
 
 ```{r final_model, echo=FALSE, message=FALSE, warning=FALSE}
 #summary(updated_model)
@@ -719,6 +649,10 @@ Having looked at the diagnostics, variable selection, and potential transformati
 | 2000         | 0.0811705          | 0.8221 | 0.82        |
 
 
+# Discussion
+
+Below we further investigate the validity of our final model. Another feature we considered while testing our model was creating variables from the data that we were given. However, without any transformations, the numerical variables were all quite normal. Since we did not see any skewed data or any irregular shapes in the ggpairs density plots above, we were not able to create any variables that improve our model.
+
 ## Marginal Model Plots
 
 To further verify our model, we plotted the marginal model plots to make sure the trend of the model and data lined up. The results show that the trends in the model and data line up extremely closely, which is the goal of the model. This builds on the analysis of the variables from earlier that showed that the relationships between W.P and individual predictors are linear, so polynomial terms would not improve the predictive capabilities of the model.
@@ -730,129 +664,37 @@ model_single_numerical <- lm(W.P ~ EFG_O + EFG_D + TOR + TORD + ORB + DRB + FTRD
 mmps(model_single_numerical)
 ```
 
+## Added Variable Plots
 
-### Final Diagnostics
-Based on the result above, shows the summary of the final model and its diagnostic plots below. As well as the leverage plots. There are some bad leverage points. Also provides the diagnostic plots after removing those bad leverage points. The diagnostic plots indicate that the assumptions are met and that the predictors are effective in predicting the winning proportions. One issue we may consider is a multicollinearity issue with interaction. Some of the predictors, such as EFG_O, WAB, and those interacted terms of the final model have variance inflation factors larger than 5.
-
-
+Shown below are the added variable plots for our final model. In a perfect world, all of these plots should show a non-horizontal slope because that means that all of these betas contributes to the model while controlling for the influence of the other betas. None of the plots below show a perfectly horizontal blue line. Based on the fact that all of our predictors are significant, and that removing these betas quickly started to reduce our model's adjusted $R^2$, we kept these betas.
 
 
-|             	            | Estimate   	| Std. Error 	| t value 	| Pr(>\|t\|) 	|
-|--------------------------	|------------	|------------	|---------	|------------	|
-| (Intercept)             	| -0.0956912 	| 0.1087230  	| -0.880  	| 0.378892   	|
-| EFG_o                    	| 0.0251080  	| 0.0019409  	| 12.936  	| < 2e-16    	|
-| EFG_D       	            | -0.0173218 	| 0.0014257  	| -12.150 	| < 2e-16    	|
-| TOR         	            | -0.0184541 	| 0.0021265  	| -8.678  	| < 2e-16    	|
-| TORD        	            | 0.0188746  	| 0.0013756  	| 13.721  	| < 2e-16    	|
-| ORB            	          | 0.0092178  	| 0.0010933  	| 8.431   	| < 2e-16    	|
-| DRB         	            | -0.0091768 	| 0.0008059  	| -11.387 	| < 2e-16    	|
-| FTRD                      | -0.0018203  | 0.0003588   | -5.073    | 4.27e-07    |
-| WAB                       | 0.0181589   | 0.0010879   | 16.692    | < 2e-16     |
-| X500.LevelYES             | 0.5972203   | 0.1123004   | 5.318     | 1.17e-07    |
-| X500.LevelNO:ADJOE        | -0.0101787  | 0.0013350   | -7.625    | 3.78e-14    |
-| X500.LevelYES:ADJOE       | -0.0148462  | 0.0012437   | -11.937   | < 2e-16     |
-| WAB:X500.LevelYES         | 0.0050946   | 0.0013771   | 3.699     | 0.000222    |
-| ADJOE:Power.RatingMEDIUM  | 0.0070205   | 0.0016043   | 4.376     | 1.27e-05    |
-| ADJOE:Power.RatingSMALL   | 0.0109665   | 0.0017807   | 6.159     | 8.87e-10    |
-| Power.RatingLARGE:ADJDE   | 0.0130708   | 0.0011956   | 10.932    | < 2e-16     |
-| Power.RatingMEDIUM:ADJDE  | 0.0114744   | 0.0013279   | 8.641     | < 2e-16     |
-| Power.RatingSMALL:ADJDE   | 0.0093150   | 0.0011239   | 8.288     | < 2e-16     |
-| EFG_O:Power.RatingMEDIUM  | -0.0110918  | 0.0026461   | -4.192    | 2.89e-05    |
-| EFG_O:Power.RatingSMALL   | -0.0167030  | 0.0031358   | -5.326    | 1.12e-07    |
-| TOR:Power.RatingMEDIUM    | 0.0070655   | 0.0026112   | 2.706     | 0.006870    |
-| TOR:Power.RatingSMALL     | 0.0140951   | 0.0029780   | 4.733     | 2.37e-06    |
-| ORB:Power.RatingMEDIUM    | -0.0045416  | 0.0014650   | -3.100    | 0.001962    |
-| ORB:Power.RatingSMALL     | -0.0055318  | 0.0016170   | -3.421    | 0.000637    |
-
-
-
-| Observations 	| Residual Std. Error 	| R^2    	| Adjusted R^2 	|
-|--------------	|---------------------	|--------	|--------------	|
-| 2000         	| 0.08117             	| 0.8221 	| 0.82         	|
-
-```{r, echo=FALSE}
-diag_plot2 <- function(x) {
-  p1 <- ggplot(x, aes(x$fitted.values, x$residuals)) + 
-  geom_point() +
-  geom_smooth(method = "loess", formula = y ~ x, color = "red") + 
-  geom_hline(yintercept = 0, color = "gray", linetype = "dashed") +
-  labs(x = "Fitted values", y = "Residuals", title = "Residual vs Fitted Plot")
-
-  p2 <- ggplot(x, aes(sample = rstandard(x))) + 
-    stat_qq() + 
-    stat_qq_line() +
-    labs(x = "Theoretical Quantiles", y = "Standardized Residuals", title = "Normal Q-Q")
-
-  p3 <- ggplot(x, aes(x$fitted.values, sqrt(abs(rstandard(x))))) + 
-    geom_point(na.rm = TRUE) +
-    geom_smooth(method = "loess", formula = y ~ x, na.rm = TRUE) +
-    labs(x = "Fitted Value", y = expression(sqrt("|Standardized Residuals|")), 
-         title = "Scale-Location") + 
-    geom_hline(yintercept = sqrt(2), color = "red", linetype = "dashed")
-
-  p4 <- ggplot(x, aes(hatvalues(x), rstandard(x))) +
-    geom_point(aes(size = cooks.distance(x)), na.rm = TRUE) +
-    scale_size_continuous("Cook's Distance", range = c(1,5)) +
-    labs(x = "Leverage", y = "Standardized Residuals",
-         title = "Residual vs Leverage Plot") +
-    geom_hline(yintercept = c(-2,2), color = "red", linetype = "dashed") +
-    geom_vline(xintercept = 2 * (nrow(summary(x)$coefficients)-1) / 2000, color = "blue", linetype = "dashed")
-  
-  grid.arrange(p1, p2, p3, p4, nrow = 2)
-}
-updated_model <- lm(W.P ~ EFG_O + EFG_D +
-           TOR + TORD + ORB + DRB +
-           FTRD + WAB + X500.Level +
-           ADJOE:X500.Level + WAB*X500.Level +
-           ADJOE:Power.Rating + ADJDE:Power.Rating + EFG_O:Power.Rating + 
-           TOR:Power.Rating + ORB:Power.Rating,
-         data = train)
-diag_plot2(updated_model)
-```
-
-
-### Leverage Points
-
-| Leverage Points 	| Outliers 	|     	|
-|-----------------	|----------	|-----	|
-|                 	| NO       	| YES 	|
-| YES             	| 86       	| 7   	|
-| NO              	| 1828     	| 79  	|
-
-
-
-### Leverage Plots
-```{r, echo=FALSE}
+```{r added variable plots, message=FALSE, echo = FALSE, warning= FALSE}
 avPlots(updated_model)
 ```
 
 
-### Model after removing 7 bad leverage points
-```{r, echo=FALSE}
-no_bad_lev_data <- train[-c(5, 36, 40, 54, 61, 70, 85), ]
-updated_model_leverage <- lm(W.P ~ EFG_O + EFG_D +
-           TOR + TORD + ORB + DRB +
-           FTRD + WAB + X500.Level +
-           ADJOE:X500.Level + WAB*X500.Level +
-           ADJOE:Power.Rating + ADJDE:Power.Rating + EFG_O:Power.Rating + 
-           TOR:Power.Rating + ORB:Power.Rating,
-         data = no_bad_lev_data)
-diag_plot2(updated_model_leverage)
-```
 
+# Limitations and Conclusions
 
+One potential concern with our model is the multicollinearity assumption. In the VIF section above, the model with all of the predictors without interaction terms passed the standard cutoff of five. However, the predictor WAB's VIF was 4.80543, which is near five. This means that if WAB was modeled with the other predictors in our final model, that model would have an $R^2$ value of 0.79170. This is a concern because failing multicollinearity means that beta estimates in the model will be inaccurate. Fortunately, the VIF value is still below the cutoff of five, and the variable is significant in the model meaning it is still helping for predicting winning percentage.
 
+Moving to other diagnostics, a very slight concern with the diagnostics plots is the minor increase in residual variance for middle part of the data. Overall, the standardized residuals do not show that much of a difference and we tried box-cox and inverse response plot transformations to possibly improve this, but the transformations were unsuccessful by the evidence above. The only other note from the diagnostic plots is the seven bad leverage points. We tried removing them, but new bad leverage points; we tried transformations to improve the data, but these options did not help. While it is not ideal to have bad leverage points, we have 86 good leverage points, which is far more than the number of bad leverage points. These good leverage points serve to increase $R^2$ and do not have a negative effect on the beta coefficients[4].
 
-| Observations 	| Residual Std. Error 	| R^2    	| Adjusted R^2 	|
-|--------------	|---------------------	|--------	|--------------	|
-| 1993         	| 0.08111             	| 0.8223 	| 0.8203       	|
+A final limitation of our model comes from the partial f-test comparing our current model the BIC recommended model. The significant p-value indicated that there were betas in the BIC model that were not equal to 0, but we decided to proceed with six fewer betas because the cost was only 0.0053 on the model's adjusted $R^2$. Picking the best subset of predictors in a model is not a perfect art, and it requires some human input to weigh the benefits and costs[5].
 
+Overall, we are satisfied with the model that we produced to predict winning percentage in college basketball based on game statistics. Approximately 82% of the variation of winning percentage is accounted for by the model, and our model is backed by a respectable Kaggle ranking in the class. More evidence that our model is reasonable is that it performs about the same on the training and testing data implying that it is not overfitting to the training data. The difference in adjusted $R^2$ on the training data and the Kaggle score is 0.00267. One thing that we were surprised by with this project was the lack of transformations that helped the data because of how normal the variable data was.
 
+# References
 
-### Limitation and  Conclusion
+[1] Almohalwas, A., 2022. STAT 101 A Winter 2022 Kaggle Competition.
 
-In regards to the diagnostic plots shown above, it seems good on normality assumption, constant variance assumption. This final model is effective in predicting the winning proportion in USA college basketball. However, there is one issue mentioned before, which is multicollinearity. The variance inflation factors of the interacted predictors are greater than 5.
+[2] ESPN, 2022. NCAA Tournament Bracket Challenge 2022 | ESPN. [online] ESPN. Available at: <https://fantasy.espn.com/tournament-challenge-bracket/2022/en/story?pageName=tcmen\rules> [Accessed 18 March 2022].
 
-The score of this final model is on the top of the rank in Kaggle. Most of the other teams got approximately the same score, just a difference of less than 0.005. 
+[3] Almohalwas, A., 2022. Predicting Winning Proportions | Kaggle. [online] Kaggle.com. Available at: <https://www.kaggle.com/c/predicting-winning-proportions/submissions> [Accessed 18 March 2022].
+
+[4] Almohalwas, A., 2022. chapter 3 scanned notes and Examples updated.
+
+[5] Sheather, S., 2009. A Modern Approach to Regression with R. Springer, pp.232-233.
 
 
