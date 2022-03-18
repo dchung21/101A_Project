@@ -20,7 +20,7 @@ test <- read.csv("CBDtestNoY.csv")
 | Feature                    | Response                                |
 |----------------------------|-----------------------------------------|
 | Name                       | Oscar O'Brien, Kaijun Cui, Donald Chung |
-| SID                        | 205338241, ,                                |
+| SID                        | 205338241, 105543204,                    |
 | Kaggle Nickname            | Oscar, Donald, Kaijun - Lec1                 |
 | Kaggle Rank                | NEED TO UPDATE                                       |
 | Kaggle R^2                 | 0.81733                                       |
@@ -88,7 +88,7 @@ ggplot(train, aes(x = W.P)) +
 | NCAA         | 2                    |
 
 
-```{r categorical variables, echo=FALSE}
+```{r categorical variables, echo=FALSE, message=FALSE, warning=FALSE}
 p1 <- ggplot(train, aes(x = X500.Level, y = W.P, fill = X500.Level)) + 
   geom_boxplot() +
   theme(legend.position = "none")
@@ -111,7 +111,81 @@ grid.arrange(p1, p2, p3, p4, nrow = 2)
 
 ## Analyzing the numerical variables
 
+We now inspect our numerical variables. We first look at the relationship between W.P are the numerical predictors. Below is a table of the numerical variable and the correlation coefficient between the variable and W.P:
 
+| Variable       | Correlation |
+|----------------|-------------|
+| WAB            | 0.806       |
+| ADJOE          | 0.643       |
+| ADJDE          | -0.591      |
+| EFG_O          | 0.589       |
+| X2P_O          | 0.554       |
+| EFG_D          | -0.525      |
+| X2P_D          | -0.456      |
+| X3P_O          | 0.415       |
+| X3P_D          | -0.412      |
+| TOR            | -0.387      |
+| DRB            | -0.354      |
+| FTRD           | -0.266      |
+| ORB            | 0.245       |
+| FTR            | 0.147       |
+| TORD           | 0.146       |
+| Adjusted.Tempo | -0.00671    |
+
+Additionally here is a scatterplot matrix between the numberical variables
+
+```{r echo =FALSE, message =FALSE, warning=FALSE}
+ggpairs(train, columns = c("WAB", "ADJOE", "ADJDE", "EFG_O", "X2P_O", "EFG_D", "X2P_D", "X3P_O"))
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggpairs(train, columns = c("X3P_D", "TOR", "DRB", "FTRD", "ORB", "FTR", "TORD", "Adjusted.Tempo"))
+```
+
+We split the correlation plot since a plot with all the variables makes the plot unreadable. Based on the density plots of the numerical variables they all seem approximately normal so transformations to fix normality are not needed.
+
+## Analyzing Interactions
+
+Below are the most prominent interactions that were found along with their plots
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+p1 <- ggplot(train, aes(x = ADJOE, y = W.P, group = X500.Level, color = X500.Level)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p2 <- ggplot(train, aes(x = WAB, y = W.P, group = X500.Level, color = X500.Level)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p3 <- ggplot(train, aes(x = ADJOE, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p4 <- ggplot(train, aes(x = ADJDE, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p5 <- ggplot(train, aes(x = EFG_O, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p6 <- ggplot(train, aes(x = TOR, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p7 <- ggplot(train, aes(x = ORB, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+p8 <- ggplot(train, aes(x = WAB, y = W.P, group = Power.Rating, color = Power.Rating)) +
+  geom_point(alpha = .5) +
+  stat_smooth(method = "loess")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+grid.arrange(p5, p6, p7, p8, nrow = 2)
+```
 
 
 
